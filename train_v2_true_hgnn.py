@@ -169,12 +169,7 @@ for epoch in range(epochs):
         # ==========================================
 
     logits, view1, view2 = model(X_normalized, adj_list_dropped)
-    
-    # Loss 都在严格隔离的 train_idx 上计算
-    loss_bce = criterion_bce(logits[train_idx], Y[train_idx])
-    loss_gcl = supervised_contrastive_loss(view1[train_idx], view2[train_idx], Y[train_idx])
-    
-    loss = loss_bce + alpha * loss_gcl
+    loss = criterion_bce(logits[train_idx], Y[train_idx]) # 🌟 消融实验：只保留基础分类 Loss
     loss.backward()
     optimizer.step()
     
@@ -202,7 +197,7 @@ for epoch in range(epochs):
             pass
         
     if (epoch + 1) % 20 == 0:
-        print(f"Epoch {epoch+1:03d}/{epochs} | BCE: {loss_bce.item():.3f} | SupCon: {loss_gcl.item():.3f} | 当前 Test AUC: {auc_test:.3f}")
+        print(f"Epoch {epoch+1:03d}/{epochs} | Loss: {loss.item():.3f} | SupCon: 0.000 (已关闭) | 当前 Test AUC: {auc_test:.3f}")
 
 # 🌟 修改点 4：在训练结束的总结栏里，把新指标打印出来
 print("="*50)
